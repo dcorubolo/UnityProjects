@@ -1,6 +1,16 @@
 ﻿<Properties StartupItem="Assembly-CSharp.csproj">
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
-  <MonoDevelop.Ide.Workbench />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/TuplaPosicion.cs">
+    <Files>
+      <File FileName="Assets/Scripts/GridBrain.cs" Line="1" Column="1" />
+      <File FileName="Assets/Scripts/GameBoard.cs" Line="20" Column="37" />
+      <File FileName="Assets/Scripts/MainGameControl.cs" Line="21" Column="36" />
+      <File FileName="Assets/Scripts/MainMenuButton.cs" Line="1" Column="1" />
+      <File FileName="Assets/Scripts/MainMenuScript.cs" Line="1" Column="1" />
+      <File FileName="Assets/Scripts/Ficha.cs" Line="1" Column="1" />
+      <File FileName="Assets/Scripts/TuplaPosicion.cs" Line="16" Column="8" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore />
   </MonoDevelop.Ide.DebuggingService.Breakpoints>

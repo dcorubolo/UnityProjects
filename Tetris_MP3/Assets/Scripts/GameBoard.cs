@@ -9,10 +9,19 @@ public class GameBoard : MonoBehaviour {
 	public Transform[,] grid;
 	public GameObject[] candy;
 	public GameObject[] specials;
+	public GameObject[] specialCandy;
 	bool updatePaused = false;
+	bool[] linesForSpecials = new bool[10000];
+	int lastPos = 0;
 
 	// Use this for initialization
 	void Start () {
+		for (int i = 0; i < 10000; i++) {
+			if (Random.Range(0,100) % 7 == 0) {
+				linesForSpecials [i] = true; 
+			}
+		}
+
 		grid = new Transform[maxHeigth,maxWidth];
 		for (int i = 0; i < 4; i++) {
 			GridBrain.spawnLine (i, grid, candy, this);
@@ -80,7 +89,16 @@ public class GameBoard : MonoBehaviour {
 	}
 
 	public void newLine(){
-		GridBrain.spawnLineFromBelow (grid, candy, this);
+		if (linesForSpecials [lastPos]) {
+			newLineWithSpecial ();
+		} else {
+			GridBrain.spawnLineFromBelow (grid, candy, this);
+		}
+		lastPos++;
+	}
+
+	public void newLineWithSpecial(){
+		GridBrain.spawnLineFromBelowWithSpecial (grid, candy, this, specialCandy);
 	}
 
 	public void move(Vector3 pos){

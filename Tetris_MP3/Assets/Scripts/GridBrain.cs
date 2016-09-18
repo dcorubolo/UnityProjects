@@ -44,6 +44,27 @@ public class GridBrain : MonoBehaviour {
 		}
 	}
 
+	public static void spawnLineFromBelowWithSpecial(Transform[,] grid, GameObject[] candy, GameBoard parent, GameObject[] specialCandy){
+		checkearFichaParaSubir (20, 6, grid);
+		int specialPos = Random.Range (0, 6);
+		for (int i = 0; i < 6; i++) {
+			GameObject newCandy;
+			if (i == specialPos) {
+				int j = Random.Range(0, candy.Length);	
+				Vector3 position = new Vector3 (i, 0, 0);
+				newCandy = (GameObject) Instantiate (specialCandy [0], position, Quaternion.identity);
+			} else {
+				int j = Random.Range(0, candy.Length);	
+				Vector3 position = new Vector3 (i, 0, 0);
+				newCandy = (GameObject) Instantiate (candy [j], position, Quaternion.identity);
+			}
+			newCandy.transform.parent = null;
+			newCandy.transform.parent = parent.transform;
+			newCandy.transform.localPosition = newCandy.transform.position;
+			grid [0, i] = newCandy.transform;
+		}
+	}
+
 	public static void spawnSalchicha(Transform[,] grid, GameObject salchicha, GameObject dummy, GameBoard parent){
 		Vector3 position = new Vector3 (0, 19, 0);
 		GameObject newSalchicha = (GameObject)Instantiate (salchicha, position, Quaternion.identity);
