@@ -14,6 +14,7 @@ public class Creature {
 	string skill_1;
 	string skill_2;
 	string skill_3;
+	int cantidad;
 
 	int positionx; 
 	int positiony;
@@ -32,6 +33,7 @@ public class Creature {
 		this.skill_3 = skill_3;
 		this.positionx = posicionx;
 		this.positiony = posiciony;
+		cantidad = 0;
 	}
 
 	public Creature (string name, int attack, int defense, int ranged_Attack, int min_Damage, int max_Damage, int life, int speed, 
@@ -49,6 +51,7 @@ public class Creature {
 		this.skill_3 = skill_3;
 		this.positionx = posicionx;
 		this.positiony = posiciony;
+		cantidad = 0;
 	}
 
 	public string getName(){
@@ -106,5 +109,9 @@ public class Creature {
 
 	public int getPositiony (){
 		return this.positiony;
+	}
+
+	public int getCantidad(){
+		return cantidad;
 	}
 }

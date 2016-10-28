@@ -8,6 +8,8 @@ public class GameEngine : MonoBehaviour {
 
 	string player1Name = "Diego";
 	string player2Name = "Gustavo";
+	string[] playerList = new string[2];
+	string gameName = "Partida1";
 	Creature[] player1 = new Creature[7];
 	Creature[] player2 = new Creature[7];
 	bool isDBConnecting = false;
@@ -51,8 +53,12 @@ public class GameEngine : MonoBehaviour {
 					RaycastHit hitInfo = new RaycastHit ();
 					Ray ray = Camera.main.ScreenPointToRay (Input.mousePosition);
 					if (Physics.Raycast (ray, out hitInfo)) {
-						movingCreature = true;
-						targetPosition = hitInfo.transform.position;
+						if (hitInfo.collider.name == "Hexagon(Clone)") {
+							movingCreature = true;
+							targetPosition = hitInfo.transform.position;
+						} else if (hitInfo.collider.name == "SaveButton"){
+							saveGame ();
+						}
 					}
 					bool odd = false;
 					if (hitInfo.transform.position.y == 0.75F ||
@@ -124,6 +130,7 @@ public class GameEngine : MonoBehaviour {
 				}
 				GameObject creature = (GameObject) Instantiate(Resources.Load("Creatures/" + player2[i].getName(), typeof(GameObject)));
 				creature.transform.position = grid[player2[i].getPositiony(),player2[i].getPositionx()];
+				creature.transform.localScale.Set(-1F,1F,1f);
 				nextToMove.Add(player2[i]);
 				yield return new WaitForSeconds (1);
 			}
@@ -152,7 +159,121 @@ public class GameEngine : MonoBehaviour {
 
 	void saveGame(){
 		if (DatabaseAccess.isDatabaseConnected()) {
-			//run StoredProcedure to insert or update the table with the game details (Creatures_Jugador_Partida)
+			playerList [0] = player1Name;
+			playerList [1] = player2Name;
+			for (int i = 0; i < playerList.Length; i++) {
+				var trans = DatabaseAccess.getDatabase().BeginTransaction();
+
+				NpgsqlCommand command = new NpgsqlCommand ("prepareToSaveGame", DatabaseAccess.getDatabase ());
+				command.CommandType = System.Data.CommandType.StoredProcedure;
+
+				var parameter = command.CreateParameter ();
+				parameter.ParameterName = "nomJugador";
+				parameter.DbType = System.Data.DbType.String;
+				parameter.Value = playerList[i];
+				command.Parameters.Add (parameter);
+				parameter = command.CreateParameter ();
+				parameter.ParameterName = "nomPartida";
+				parameter.DbType = System.Data.DbType.String;
+				parameter.Value = gameName;
+				command.Parameters.Add (parameter);
+				var da = new Npgsql.NpgsqlDataAdapter(command);
+				var ds = new System.Data.DataSet();
+				da.Fill(ds);
+
+				trans.Commit();
+			}
+			for (int i = 0; i < player1.Length; i++) {
+				if (player1[i] == null) {
+					break;
+				}
+				var trans = DatabaseAccess.getDatabase().BeginTransaction();
+
+				NpgsqlCommand command = new NpgsqlCommand ("prepareToSaveGame", DatabaseAccess.getDatabase ());
+				command.CommandType = System.Data.CommandType.StoredProcedure;
+
+				var parameter = command.CreateParameter ();
+				parameter.ParameterName = "nomJugador";
+				parameter.DbType = System.Data.DbType.String;
+				parameter.Value = playerList[0];
+				command.Parameters.Add (parameter);
+				parameter = command.CreateParameter ();
+				parameter.ParameterName = "nomPartida";
+				parameter.DbType = System.Data.DbType.String;
+				parameter.Value = gameName;
+				command.Parameters.Add (parameter);
+				parameter = command.CreateParameter ();
+				parameter.ParameterName = "nomCriatura";
+				parameter.DbType = System.Data.DbType.String;
+				parameter.Value = player1[i].getName();
+				command.Parameters.Add (parameter);
+				parameter = command.CreateParameter ();
+				parameter.ParameterName = "posx";
+				parameter.DbType = System.Data.DbType.String;
+				parameter.Value = player1[i].getPositionx();
+				command.Parameters.Add (parameter);
+				parameter = command.CreateParameter ();
+				parameter.ParameterName = "posy";
+				parameter.DbType = System.Data.DbType.String;
+				parameter.Value = player1[i].getPositiony();
+				command.Parameters.Add (parameter);
+				parameter = command.CreateParameter ();
+				parameter.ParameterName = "cant";
+				parameter.DbType = System.Data.DbType.String;
+				parameter.Value = player1[i].getCantidad();
+				command.Parameters.Add (parameter);
+				var da = new Npgsql.NpgsqlDataAdapter(command);
+				var ds = new System.Data.DataSet();
+				da.Fill(ds);
+
+				trans.Commit();
+			}
+
+			for (int i = 0; i < player2.Length; i++) {
+				if (player1[i] == null) {
+					break;
+				}
+				var trans = DatabaseAccess.getDatabase().BeginTransaction();
+
+				NpgsqlCommand command = new NpgsqlCommand ("prepareToSaveGame", DatabaseAccess.getDatabase ());
+				command.CommandType = System.Data.CommandType.StoredProcedure;
+
+				var parameter = command.CreateParameter ();
+				parameter.ParameterName = "nomJugador";
+				parameter.DbType = System.Data.DbType.String;
+				parameter.Value = playerList[1];
+				command.Parameters.Add (parameter);
+				parameter = command.CreateParameter ();
+				parameter.ParameterName = "nomPartida";
+				parameter.DbType = System.Data.DbType.String;
+				parameter.Value = gameName;
+				command.Parameters.Add (parameter);
+				parameter = command.CreateParameter ();
+				parameter.ParameterName = "nomCriatura";
+				parameter.DbType = System.Data.DbType.String;
+				parameter.Value = player2[i].getName();
+				command.Parameters.Add (parameter);
+				parameter = command.CreateParameter ();
+				parameter.ParameterName = "posx";
+				parameter.DbType = System.Data.DbType.String;
+				parameter.Value = player2[i].getPositionx();
+				command.Parameters.Add (parameter);
+				parameter = command.CreateParameter ();
+				parameter.ParameterName = "posy";
+				parameter.DbType = System.Data.DbType.String;
+				parameter.Value = player2[i].getPositiony();
+				command.Parameters.Add (parameter);
+				parameter = command.CreateParameter ();
+				parameter.ParameterName = "cant";
+				parameter.DbType = System.Data.DbType.String;
+				parameter.Value = player2[i].getCantidad();
+				command.Parameters.Add (parameter);
+				var da = new Npgsql.NpgsqlDataAdapter(command);
+				var ds = new System.Data.DataSet();
+				da.Fill(ds);
+
+				trans.Commit();
+			}
 		}
 	}
 
