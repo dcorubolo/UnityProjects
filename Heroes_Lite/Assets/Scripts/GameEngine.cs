@@ -148,9 +148,9 @@ public class GameEngine : MonoBehaviour {
 			NpgsqlDataReader data = query.ExecuteReader ();
 			while (data.Read ()) {
 				if (data [0].ToString() == player1Name) {
-					player1 [(int)data [4]] = createCreature (data [2].ToString(), (int) data[3], (int) data[4]);
+					player1 [(int)data [4]] = createCreature (data [2].ToString(), (int) data[3], (int) data[4], player1Name);
 				} else {
-					player2 [(int)data [4]] = createCreature (data [2].ToString(), (int) data[3], (int) data[4]);
+					player2 [(int)data [4]] = createCreature (data [2].ToString(), (int) data[3], (int) data[4], player2Name);
 				}
 			}
 		}
@@ -183,19 +183,17 @@ public class GameEngine : MonoBehaviour {
 
 				trans.Commit();
 			}
-			for (int i = 0; i < player1.Length; i++) {
-				if (player1[i] == null) {
-					break;
-				}
-				var trans = DatabaseAccess.getDatabase().BeginTransaction();
 
-				NpgsqlCommand command = new NpgsqlCommand ("prepareToSaveGame", DatabaseAccess.getDatabase ());
+			foreach (Creature item in nextToMove) {
+				var trans = DatabaseAccess.getDatabase ().BeginTransaction ();
+				print (item.getName ());
+				NpgsqlCommand command = new NpgsqlCommand ("saveGame", DatabaseAccess.getDatabase ());
 				command.CommandType = System.Data.CommandType.StoredProcedure;
 
 				var parameter = command.CreateParameter ();
 				parameter.ParameterName = "nomJugador";
 				parameter.DbType = System.Data.DbType.String;
-				parameter.Value = playerList[0];
+				parameter.Value = item.getOwner();
 				command.Parameters.Add (parameter);
 				parameter = command.CreateParameter ();
 				parameter.ParameterName = "nomPartida";
@@ -205,43 +203,41 @@ public class GameEngine : MonoBehaviour {
 				parameter = command.CreateParameter ();
 				parameter.ParameterName = "nomCriatura";
 				parameter.DbType = System.Data.DbType.String;
-				parameter.Value = player1[i].getName();
+				parameter.Value = item.getName ();
 				command.Parameters.Add (parameter);
 				parameter = command.CreateParameter ();
 				parameter.ParameterName = "posx";
-				parameter.DbType = System.Data.DbType.String;
-				parameter.Value = player1[i].getPositionx();
+				parameter.DbType = System.Data.DbType.Int32;
+				parameter.Value = item.getPositionx ();
 				command.Parameters.Add (parameter);
 				parameter = command.CreateParameter ();
 				parameter.ParameterName = "posy";
-				parameter.DbType = System.Data.DbType.String;
-				parameter.Value = player1[i].getPositiony();
+				parameter.DbType = System.Data.DbType.Int32;
+				parameter.Value = item.getPositiony ();
 				command.Parameters.Add (parameter);
 				parameter = command.CreateParameter ();
 				parameter.ParameterName = "cant";
-				parameter.DbType = System.Data.DbType.String;
-				parameter.Value = player1[i].getCantidad();
+				parameter.DbType = System.Data.DbType.Int32;
+				parameter.Value = item.getCantidad ();
 				command.Parameters.Add (parameter);
-				var da = new Npgsql.NpgsqlDataAdapter(command);
-				var ds = new System.Data.DataSet();
-				da.Fill(ds);
+				var da = new Npgsql.NpgsqlDataAdapter (command);
+				var ds = new System.Data.DataSet ();
+				da.Fill (ds);
 
-				trans.Commit();
+				trans.Commit ();
 			}
 
-			for (int i = 0; i < player2.Length; i++) {
-				if (player1[i] == null) {
-					break;
-				}
+			foreach (Creature item in alreadyMoved) {
+				print (item.getName ());
 				var trans = DatabaseAccess.getDatabase().BeginTransaction();
 
-				NpgsqlCommand command = new NpgsqlCommand ("prepareToSaveGame", DatabaseAccess.getDatabase ());
+				NpgsqlCommand command = new NpgsqlCommand ("saveGame", DatabaseAccess.getDatabase ());
 				command.CommandType = System.Data.CommandType.StoredProcedure;
 
 				var parameter = command.CreateParameter ();
 				parameter.ParameterName = "nomJugador";
 				parameter.DbType = System.Data.DbType.String;
-				parameter.Value = playerList[1];
+				parameter.Value = item.getOwner ();
 				command.Parameters.Add (parameter);
 				parameter = command.CreateParameter ();
 				parameter.ParameterName = "nomPartida";
@@ -251,22 +247,22 @@ public class GameEngine : MonoBehaviour {
 				parameter = command.CreateParameter ();
 				parameter.ParameterName = "nomCriatura";
 				parameter.DbType = System.Data.DbType.String;
-				parameter.Value = player2[i].getName();
+				parameter.Value = item.getName();
 				command.Parameters.Add (parameter);
 				parameter = command.CreateParameter ();
 				parameter.ParameterName = "posx";
-				parameter.DbType = System.Data.DbType.String;
-				parameter.Value = player2[i].getPositionx();
+				parameter.DbType = System.Data.DbType.Int32;
+				parameter.Value = item.getPositionx();
 				command.Parameters.Add (parameter);
 				parameter = command.CreateParameter ();
 				parameter.ParameterName = "posy";
-				parameter.DbType = System.Data.DbType.String;
-				parameter.Value = player2[i].getPositiony();
+				parameter.DbType = System.Data.DbType.Int32;
+				parameter.Value = item.getPositiony();
 				command.Parameters.Add (parameter);
 				parameter = command.CreateParameter ();
 				parameter.ParameterName = "cant";
-				parameter.DbType = System.Data.DbType.String;
-				parameter.Value = player2[i].getCantidad();
+				parameter.DbType = System.Data.DbType.Int32;
+				parameter.Value = item.getCantidad();
 				command.Parameters.Add (parameter);
 				var da = new Npgsql.NpgsqlDataAdapter(command);
 				var ds = new System.Data.DataSet();
@@ -277,18 +273,18 @@ public class GameEngine : MonoBehaviour {
 		}
 	}
 
-	Creature createCreature(string name, int posx, int posy){
+	Creature createCreature(string name, int posx, int posy, string owner){
 		if (DatabaseAccess.isDatabaseConnected()) {
 			NpgsqlCommand query = new NpgsqlCommand ("Select * from Criaturas where Nombre = '" + name + "'", DatabaseAccess.getDatabase ());
 			NpgsqlDataReader data = query.ExecuteReader ();
 			while (data.Read ()) {
 				try {
 					return new Creature (data[0].ToString(), (int)data [1], (int)data [2], (int) data[3], (int) data[4], (int) data[5], (int) data[6],
-						(int) data[7], data[8].ToString(), data[9].ToString(), data[10].ToString(), posx, posy);
+						(int) data[7], data[8].ToString(), data[9].ToString(), data[10].ToString(), posx, posy, 10, owner);
 				} catch (System.Exception ex) {
 					print (ex.ToString () + " the creature does not have ranged_attack");
 					return new Creature (data[0].ToString(), (int)data [1], (int)data [2], 0, (int) data[4], (int) data[5], (int) data[6],
-						(int) data[7], data[8].ToString(), data[9].ToString(), data[10].ToString(), posx, posy);	
+						(int) data[7], data[8].ToString(), data[9].ToString(), data[10].ToString(), posx, posy, 10, owner);	
 				}
 			}
 		}
